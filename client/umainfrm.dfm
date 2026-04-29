@@ -10,11 +10,10 @@ object MainFrm: TMainFrm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  FormStyle = fsMDIForm
+  FormStyle = fsNormal
   Menu = mmMain
   OldCreateOrder = False
   Position = poScreenCenter
-  WindowState = wsMaximized
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
