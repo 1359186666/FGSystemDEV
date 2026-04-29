@@ -42,35 +42,35 @@ uses
 var
   LoginFrm: TLoginFrm;
   MainFrm: TMainFrm;
+  SavedTCP: TTCPClient;
+  SavedUser: TUser;
+  SavedRole: TRole;
+  SavedPerm: TPermissionManager;
+  SavedLang: TLanguageManager;
+  LoginOk: Boolean;
 begin
   Application.Initialize;
 
-  ReportMemoryLeaksOnShutdown := True;
-
   LoginFrm := TLoginFrm.Create(nil);
   try
-    if LoginFrm.ShowModal <> mrOk then
-      Exit;
-
-    try
-      Application.CreateForm(TMainFrm, MainFrm);
-      MainFrm.Initialize(
-        LoginFrm.TCPClient,
-        LoginFrm.LoginUser,
-        LoginFrm.LoginRole,
-        LoginFrm.PermissionManager,
-        TConfigManager.Create(LoginFrm.TCPClient),
-        LoginFrm.LanguageManager
-      );
-      ShowMessage('Main form initialized, starting Application.Run...');
-      Application.Run;
-    except
-      on E: Exception do
-        ShowMessage('Error creating main form: ' + E.Message);
+    LoginOk := (LoginFrm.ShowModal = mrOk);
+    if LoginOk then
+    begin
+      SavedTCP := LoginFrm.TCPClient;
+      SavedUser := LoginFrm.LoginUser;
+      SavedRole := LoginFrm.LoginRole;
+      SavedPerm := LoginFrm.PermissionManager;
+      SavedLang := LoginFrm.LanguageManager;
     end;
-
-    LoginFrm.LoginUser.Logout;
   finally
     LoginFrm.Free;
   end;
+
+  if not LoginOk then Exit;
+
+  Application.CreateForm(TMainFrm, MainFrm);
+  MainFrm.Initialize(SavedTCP, SavedUser, SavedRole, SavedPerm,
+    TConfigManager.Create(SavedTCP), SavedLang);
+
+  Application.Run;
 end.
