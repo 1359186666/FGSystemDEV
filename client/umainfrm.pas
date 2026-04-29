@@ -121,6 +121,7 @@ end;
 
 procedure TMainFrm.FormShow(Sender: TObject);
 begin
+  ShowMessage('FormShow called');
   try
     UpdateStatusBar;
     UpdateMenuPermissions;

@@ -52,16 +52,22 @@ begin
     if LoginFrm.ShowModal <> mrOk then
       Exit;
 
-    Application.CreateForm(TMainFrm, MainFrm);
-    MainFrm.Initialize(
-      LoginFrm.TCPClient,
-      LoginFrm.LoginUser,
-      LoginFrm.LoginRole,
-      LoginFrm.PermissionManager,
-      TConfigManager.Create(LoginFrm.TCPClient),
-      LoginFrm.LanguageManager
-    );
-    Application.Run;
+    try
+      Application.CreateForm(TMainFrm, MainFrm);
+      MainFrm.Initialize(
+        LoginFrm.TCPClient,
+        LoginFrm.LoginUser,
+        LoginFrm.LoginRole,
+        LoginFrm.PermissionManager,
+        TConfigManager.Create(LoginFrm.TCPClient),
+        LoginFrm.LanguageManager
+      );
+      ShowMessage('Main form initialized, starting Application.Run...');
+      Application.Run;
+    except
+      on E: Exception do
+        ShowMessage('Error creating main form: ' + E.Message);
+    end;
 
     LoginFrm.LoginUser.Logout;
   finally
