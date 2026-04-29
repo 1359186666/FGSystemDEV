@@ -19,7 +19,7 @@ object TServerMainFrm: TServerMainFrm
     Left = 0
     Top = 0
     Width = 784
-    Height = 57
+    Height = 80
     Align = alTop
     TabOrder = 0
     object lblStatus: TLabel
@@ -79,6 +79,22 @@ object TServerMainFrm: TServerMainFrm
       Caption = 'DB Config'
       TabOrder = 3
       OnClick = btnConfigClick
+    end
+    object btnTestDB: TButton
+      Left = 368
+      Top = 7
+      Width = 85
+      Height = 25
+      Caption = 'Test DB'
+      TabOrder = 4
+      OnClick = btnTestDBClick
+    end
+    object lblDB: TLabel
+      Left = 16
+      Top = 56
+      Width = 400
+      Height = 13
+      Caption = 'DB: Not configured'
     end
   end
   object mmLog: TMemo

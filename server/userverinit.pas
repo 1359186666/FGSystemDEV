@@ -23,6 +23,7 @@ type
     function Connect: Boolean; overload;
     procedure Disconnect;
     function IsConnected: Boolean;
+    function TestConnection(const AServer, ADatabase, AUser, APassword: string): Boolean;
 
     function CreateQuery: TSQLQuery;
     function ExecSQL(const ASQL: string): Integer;
@@ -202,6 +203,30 @@ begin
     Q.Free;
     raise;
   end;
+end;
+
+function TServerInit.TestConnection(const AServer, ADatabase, AUser,
+  APassword: string): Boolean;
+var
+  TempConn: TSQLConnection;
+begin
+  Result := False;
+  TempConn := TSQLConnection.Create(nil);
+  try
+    TempConn.DriverName := 'MSSQL';
+    TempConn.LibraryName := 'dbxmss.dll';
+    TempConn.VendorLib := 'sqlncli11.dll';
+    TempConn.Params.Add('DriverName=MSSQL');
+    TempConn.Params.Add('HostName=' + AServer);
+    TempConn.Params.Add('Database=' + ADatabase);
+    TempConn.Params.Add('User_Name=' + AUser);
+    TempConn.Params.Add('Password=' + APassword);
+    TempConn.Open;
+    Result := True;
+    TempConn.Close;
+  except
+  end;
+  TempConn.Free;
 end;
 
 end.

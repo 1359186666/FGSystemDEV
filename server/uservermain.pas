@@ -38,14 +38,18 @@ type
     lblPort: TLabel;
     edtPort: TEdit;
     btnConfig: TButton;
+    btnTestDB: TButton;
+    lblDB: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure btnConfigClick(Sender: TObject);
+    procedure btnTestDBClick(Sender: TObject);
   private
     FServerContainer: TServerContainer;
     procedure Log(const AMsg: string);
+    procedure UpdateDBStatus;
   public
   end;
 
@@ -63,6 +67,7 @@ begin
   edtPort.Text := IntToStr(DEFAULT_SERVER_PORT);
   lblStatus.Caption := 'Stopped';
   btnStop.Enabled := False;
+  UpdateDBStatus;
 end;
 
 procedure TServerMainFrm.FormDestroy(Sender: TObject);
@@ -83,6 +88,7 @@ begin
     btnStop.Enabled := True;
     edtPort.Enabled := False;
     Log('Server started successfully.');
+    UpdateDBStatus;
   except
     on E: Exception do
     begin
@@ -227,6 +233,86 @@ end;
 procedure TServerMainFrm.Log(const AMsg: string);
 begin
   mmLog.Lines.Add(FormatDateTime('yyyy-MM-dd HH:mm:ss', Now) + ' ' + AMsg);
+end;
+
+procedure TServerMainFrm.UpdateDBStatus;
+var
+  Ini: TMemIniFile;
+  CfgFile, Server, DB, User, Pwd: string;
+begin
+  CfgFile := FServerContainer.ServerInit.ConfigFile;
+  Server := '127.0.0.1';
+  DB := 'FrameworkDB';
+  User := 'sa';
+  Pwd := '';
+
+  if FileExists(CfgFile) then
+  begin
+    Ini := TMemIniFile.Create(CfgFile, TEncoding.UTF8);
+    try
+      Server := Ini.ReadString('Database', 'Server', '127.0.0.1');
+      DB := Ini.ReadString('Database', 'Database', 'FrameworkDB');
+      User := Ini.ReadString('Database', 'User_Name', 'sa');
+      Pwd := Ini.ReadString('Database', 'Password', '');
+    finally
+      Ini.Free;
+    end;
+  end;
+
+  if FServerContainer.ServerInit.IsConnected then
+  begin
+    lblDB.Caption := Format('DB: %s@%s - Connected', [DB, Server]);
+    lblDB.Font.Color := clGreen;
+  end
+  else
+  begin
+    lblDB.Caption := Format('DB: %s@%s - Disconnected', [DB, Server]);
+    lblDB.Font.Color := clRed;
+  end;
+end;
+
+procedure TServerMainFrm.btnTestDBClick(Sender: TObject);
+var
+  Ini: TMemIniFile;
+  CfgFile, Server, DB, User, Pwd: string;
+begin
+  CfgFile := FServerContainer.ServerInit.ConfigFile;
+  Server := '127.0.0.1';
+  DB := 'FrameworkDB';
+  User := 'sa';
+  Pwd := '';
+
+  if FileExists(CfgFile) then
+  begin
+    Ini := TMemIniFile.Create(CfgFile, TEncoding.UTF8);
+    try
+      Server := Ini.ReadString('Database', 'Server', '127.0.0.1');
+      DB := Ini.ReadString('Database', 'Database', 'FrameworkDB');
+      User := Ini.ReadString('Database', 'User_Name', 'sa');
+      Pwd := Ini.ReadString('Database', 'Password', '');
+    finally
+      Ini.Free;
+    end;
+  end;
+
+  Log(Format('Testing connection to %s@%s...', [DB, Server]));
+  Cursor := crHourGlass;
+  try
+    if FServerContainer.ServerInit.TestConnection(Server, DB, User, Pwd) then
+    begin
+      Log('Database connection test SUCCEEDED.');
+      ShowMessage(Format('Connection to %s@%s succeeded!', [DB, Server]));
+    end
+    else
+    begin
+      Log('Database connection test FAILED.');
+      ShowMessage(Format('Cannot connect to %s@%s.'#13#10+
+        'Please check server.ini or click DB Config.', [DB, Server]));
+    end;
+    UpdateDBStatus;
+  finally
+    Cursor := crDefault;
+  end;
 end;
 
 { TDBConfigFrm }
