@@ -52,21 +52,16 @@ begin
     if LoginFrm.ShowModal <> mrOk then
       Exit;
 
-    MainFrm := TMainFrm.Create(nil);
-    try
-      MainFrm.Initialize(
-        LoginFrm.TCPClient,
-        LoginFrm.LoginUser,
-        LoginFrm.LoginRole,
-        LoginFrm.PermissionManager,
-        TConfigManager.Create(LoginFrm.TCPClient),
-        LoginFrm.LanguageManager
-      );
-      Application.MainForm := MainFrm;
-      Application.Run;
-    finally
-      MainFrm.Free;
-    end;
+    Application.CreateForm(TMainFrm, MainFrm);
+    MainFrm.Initialize(
+      LoginFrm.TCPClient,
+      LoginFrm.LoginUser,
+      LoginFrm.LoginRole,
+      LoginFrm.PermissionManager,
+      TConfigManager.Create(LoginFrm.TCPClient),
+      LoginFrm.LanguageManager
+    );
+    Application.Run;
 
     LoginFrm.LoginUser.Logout;
   finally
