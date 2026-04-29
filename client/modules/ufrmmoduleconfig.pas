@@ -47,31 +47,6 @@ implementation
 
 procedure TModuleConfigFrm.FormCreate(Sender: TObject);
 begin
-  FormStyle := fsMDIChild;
-  pcConfig := TPageControl.Create(Self);
-  pcConfig.Parent := pnlDetail;
-  pcConfig.Align := alClient;
-
-  tsModule := TTabSheet.Create(Self);
-  tsModule.PageControl := pcConfig;
-  tsModule.Caption := 'Module Info';
-
-  tsDataSet := TTabSheet.Create(Self);
-  tsDataSet.PageControl := pcConfig;
-  tsDataSet.Caption := 'Datasets';
-
-  tsGridColumns := TTabSheet.Create(Self);
-  tsGridColumns.PageControl := pcConfig;
-  tsGridColumns.Caption := 'Grid Columns';
-
-  tsPanelControls := TTabSheet.Create(Self);
-  tsPanelControls.PageControl := pcConfig;
-  tsPanelControls.Caption := 'Panel Controls';
-
-  tsButtons := TTabSheet.Create(Self);
-  tsButtons.PageControl := pcConfig;
-  tsButtons.Caption := 'Buttons';
-
   inherited;
 end;
 

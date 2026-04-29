@@ -132,8 +132,11 @@ begin
   inherited;
   DoLoadConfig;
   DoApplyPermissions;
-  OpenData;
-  UpdateStatus;
+  if Assigned(FTCPClient) then
+  begin
+    OpenData;
+    UpdateStatus;
+  end;
 end;
 
 procedure TFrmSingleTable.FormClose(Sender: TObject; var Action: TCloseAction);
