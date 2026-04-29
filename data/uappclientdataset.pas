@@ -19,6 +19,7 @@ type
     FPageSize: Integer;
     FKeyFields: string;
     FTableName: string;
+    FOpening: Boolean;
 
     procedure InternalRestructureSaveRestore(AFieldDefs: TFieldDefs);
     procedure DoRestoreData(ASavedData: OleVariant; AOldFieldNames: TStringList);
@@ -85,6 +86,7 @@ begin
   FPageSize := DEFAULT_PAGE_SIZE;
   FKeyFields := '';
   FTableName := '';
+  FOpening := False;
   FTCPClient := nil;
 end;
 
@@ -152,7 +154,12 @@ begin
 
     FieldDefs.Clear;
     FieldDefs.Assign(AFieldDefs);
-    CreateDataSet;
+    FOpening := True;
+    try
+      CreateDataSet;
+    finally
+      FOpening := False;
+    end;
 
     DoRestoreData(SavedData, OldFields);
     OldFields.Free;
@@ -291,13 +298,18 @@ end;
 
 procedure TAppClientDataSet.OpenCursor(InfoQuery: Boolean);
 begin
-  if FSQLText <> '' then
+  if (FSQLText <> '') and not FOpening then
   begin
     if FTCPClient = nil then
       raise Exception.Create('TCPClient not assigned');
 
-    OpenDataPage(FSQLText, FPageIndex - 1, FPageSize);
-    First;
+    FOpening := True;
+    try
+      OpenDataPage(FSQLText, FPageIndex - 1, FPageSize);
+      First;
+    finally
+      FOpening := False;
+    end;
   end
   else
     inherited;
@@ -366,7 +378,9 @@ begin
     MetaList.Free;
   end;
 
+  FSQLText := '';
   CreateDataSet;
+  FSQLText := ASQL;
 
   // fill data
   RowList := TJSONProtocol.ParseRowsToDictList(JSONResp.Rows);
