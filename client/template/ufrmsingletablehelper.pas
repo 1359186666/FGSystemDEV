@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, System.Generics.Collections,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ActnList, Vcl.ComCtrls, Vcl.ToolWin, Vcl.Dialogs,
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ActnList, Vcl.ComCtrls, Vcl.ToolWin,
   Data.DB, Datasnap.DBClient,
   cxGraphics, cxControls, cxLookAndFeels, cxLookAndFeelPainters,
   cxStyles, cxCustomData, cxFilter, cxData, cxDataStorage, cxEdit,
@@ -108,8 +108,8 @@ type
     procedure SetLanguageManager(AMgr: TLanguageManager);
 
     procedure ApplyPermissions;
-    procedure OpenData(const ASQL: string);
-    procedure OpenData(const ASQL: string; AParams: array of Variant);
+    procedure OpenData(const ASQL: string); overload;
+    procedure OpenData(const ASQL: string; AParams: array of Variant); overload;
 
     property GridView: TcxGridDBTableView read FgrdMainView;
     property MasterCDS: TAppClientDataSet read FcdsMaster;
