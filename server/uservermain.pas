@@ -18,6 +18,8 @@ type
     edtUser: TEdit;
     lblPwd: TLabel;
     edtPwd: TEdit;
+    lblPortDB: TLabel;
+    edtPortDB: TEdit;
     btnOK: TButton;
     btnCancel: TButton;
     procedure btnOKClick(Sender: TObject);
@@ -126,8 +128,8 @@ begin
   try
     Dlg.Caption := 'Database Configuration';
     Dlg.BorderStyle := bsDialog;
-    Dlg.ClientWidth := 380;
-    Dlg.ClientHeight := 210;
+    Dlg.ClientWidth := 400;
+    Dlg.ClientHeight := 240;
     Dlg.Position := poScreenCenter;
 
     Dlg.lblServer := TLabel.Create(Dlg);
@@ -179,19 +181,32 @@ begin
     Dlg.edtPwd.Width := 230;
     Dlg.edtPwd.PasswordChar := '*';
 
+    Dlg.lblPortDB := TLabel.Create(Dlg);
+    Dlg.lblPortDB.Parent := Dlg;
+    Dlg.lblPortDB.Caption := 'Port:';
+    Dlg.lblPortDB.Left := 20;
+    Dlg.lblPortDB.Top := 136;
+
+    Dlg.edtPortDB := TEdit.Create(Dlg);
+    Dlg.edtPortDB.Parent := Dlg;
+    Dlg.edtPortDB.Left := 120;
+    Dlg.edtPortDB.Top := 133;
+    Dlg.edtPortDB.Width := 80;
+    Dlg.edtPortDB.Text := '1433';
+
     Dlg.btnOK := TButton.Create(Dlg);
     Dlg.btnOK.Parent := Dlg;
     Dlg.btnOK.Caption := 'OK';
-    Dlg.btnOK.Left := 195;
-    Dlg.btnOK.Top := 145;
+    Dlg.btnOK.Left := 165;
+    Dlg.btnOK.Top := 175;
     Dlg.btnOK.Width := 75;
     Dlg.btnOK.OnClick := Dlg.btnOKClick;
 
     Dlg.btnCancel := TButton.Create(Dlg);
     Dlg.btnCancel.Parent := Dlg;
     Dlg.btnCancel.Caption := 'Cancel';
-    Dlg.btnCancel.Left := 275;
-    Dlg.btnCancel.Top := 145;
+    Dlg.btnCancel.Left := 255;
+    Dlg.btnCancel.Top := 175;
     Dlg.btnCancel.Width := 75;
     Dlg.btnCancel.OnClick := Dlg.btnCancelClick;
 
@@ -205,6 +220,7 @@ begin
         Dlg.edtDB.Text := Ini.ReadString('Database', 'Database', 'FrameworkDB');
         Dlg.edtUser.Text := Ini.ReadString('Database', 'User_Name', 'sa');
         Dlg.edtPwd.Text := Ini.ReadString('Database', 'Password', '');
+        Dlg.edtPortDB.Text := IntToStr(Ini.ReadInteger('Database', 'Port', 1433));
       finally
         Ini.Free;
       end;
@@ -218,8 +234,10 @@ begin
           Dlg.edtServer.Text,
           Dlg.edtDB.Text,
           Dlg.edtUser.Text,
-          Dlg.edtPwd.Text);
+          Dlg.edtPwd.Text,
+          StrToIntDef(Dlg.edtPortDB.Text, 1433));
         Log('Database connection updated successfully.');
+        UpdateDBStatus;
       except
         on E: Exception do
           Log('Connection failed: ' + E.Message);
@@ -239,12 +257,14 @@ procedure TServerMainFrm.UpdateDBStatus;
 var
   Ini: TMemIniFile;
   CfgFile, Server, DB, User, Pwd: string;
+  Port: Integer;
 begin
   CfgFile := FServerContainer.ServerInit.ConfigFile;
   Server := '127.0.0.1';
   DB := 'FrameworkDB';
   User := 'sa';
   Pwd := '';
+  Port := 0;
 
   if FileExists(CfgFile) then
   begin
@@ -254,6 +274,7 @@ begin
       DB := Ini.ReadString('Database', 'Database', 'FrameworkDB');
       User := Ini.ReadString('Database', 'User_Name', 'sa');
       Pwd := Ini.ReadString('Database', 'Password', '');
+      Port := Ini.ReadInteger('Database', 'Port', 0);
     finally
       Ini.Free;
     end;
@@ -261,12 +282,12 @@ begin
 
   if FServerContainer.ServerInit.IsConnected then
   begin
-    lblDB.Caption := Format('DB: %s@%s - Connected', [DB, Server]);
+    lblDB.Caption := Format('DB: %s@%s:%d - Connected', [DB, Server, Port]);
     lblDB.Font.Color := clGreen;
   end
   else
   begin
-    lblDB.Caption := Format('DB: %s@%s - Disconnected', [DB, Server]);
+    lblDB.Caption := Format('DB: %s@%s:%d - Disconnected', [DB, Server, Port]);
     lblDB.Font.Color := clRed;
   end;
 end;

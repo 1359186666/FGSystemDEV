@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
   System.DateUtils, System.StrUtils,
-  Data.DB, Data.SqlExpr,
+  Data.DB, Data.Win.ADODB,
   uappdefines, uapptypes, uapputils, ujsonprotocol, userverinit;
 
 type
@@ -96,7 +96,7 @@ end;
 function TServerMethods.HandleAuth(const AParams: TJSONObject): string;
 var
   UserName, Password: string;
-  Q: TSQLQuery;
+  Q: TADOQuery;
   Token: string;
   UserInfo: TUserInfo;
   JResp: TJSONObject;
@@ -167,13 +167,13 @@ function TServerMethods.HandleOpenData(const AParams: TJSONObject): string;
 var
   SQL: string;
   PageIndex, PageSize: Integer;
-  Q: TSQLQuery;
+  Q: TADOQuery;
   JArr, JArrRows: TJSONArray;
   JObj: TJSONObject;
   JResp: TJSONObject;
   I, RowCount: Integer;
   Field: TField;
-  CountQ: TSQLQuery;
+  CountQ: TADOQuery;
 begin
   SQL := SafeLoadStr(AParams, 'SQL', '');
   PageIndex := SafeLoadInt(AParams, 'PageIndex', 0);
@@ -267,7 +267,7 @@ end;
 function TServerMethods.HandleExecCommand(const AParams: TJSONObject): string;
 var
   SQL: string;
-  Q: TSQLQuery;
+  Q: TADOQuery;
   RowsAffected: Integer;
   JResp: TJSONObject;
 begin
@@ -285,7 +285,7 @@ begin
       Q := FServerInit.CreateQuery;
       try
         Q.SQL.Text := SQL;
-        RowsAffected := Q.ExecSQL(False);
+        RowsAffected := Q.ExecSQL;
       finally
         Q.Free;
       end;

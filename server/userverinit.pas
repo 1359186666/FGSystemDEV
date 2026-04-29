@@ -4,35 +4,44 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.Generics.Collections, System.IniFiles,
-  Data.DB, Data.SqlExpr,
+  Data.DB, Data.Win.ADODB,
   uappdefines, uapptypes;
 
 type
   TServerInit = class
   private
-    FSQLConn: TSQLConnection;
+    FADOConn: TADOConnection;
     FConnected: Boolean;
     FConfigFile: string;
-    procedure LoadConfig(var AServer, ADatabase, AUser, APassword: string);
-    procedure SaveConfig(const AServer, ADatabase, AUser, APassword: string);
+    FLastError: string;
+    procedure LoadConfig(var AServer, ADatabase, AUser, APassword: string;
+      var APort: Integer);
+    procedure SaveConfig(const AServer, ADatabase, AUser, APassword: string;
+      APort: Integer);
+    function BuildConnStr(const AServer, ADatabase, AUser, APassword: string;
+      APort: Integer): string;
   public
     constructor Create;
     destructor Destroy; override;
 
-    function Connect(const AServer, ADatabase, AUser, APassword: string): Boolean; overload;
+    function Connect(const AServer, ADatabase, AUser, APassword: string;
+      APort: Integer = 0): Boolean; overload;
     function Connect: Boolean; overload;
     procedure Disconnect;
     function IsConnected: Boolean;
-    function TestConnection(const AServer, ADatabase, AUser, APassword: string): Boolean;
+    function TestConnection(const AServer, ADatabase, AUser, APassword: string;
+      APort: Integer = 0): Boolean;
 
-    function CreateQuery: TSQLQuery;
+    function CreateQuery: TADOQuery;
     function ExecSQL(const ASQL: string): Integer;
-    function OpenSQL(const ASQL: string): TSQLQuery;
+    function OpenSQL(const ASQL: string): TADOQuery;
 
-    procedure Reconnect(const AServer, ADatabase, AUser, APassword: string);
+    procedure Reconnect(const AServer, ADatabase, AUser, APassword: string;
+      APort: Integer = 0);
 
-    property SQLConnection: TSQLConnection read FSQLConn;
+    property ADOConnection: TADOConnection read FADOConn;
     property ConfigFile: string read FConfigFile write FConfigFile;
+    property LastError: string read FLastError;
   end;
 
 implementation
@@ -40,10 +49,9 @@ implementation
 constructor TServerInit.Create;
 begin
   inherited;
-  FSQLConn := TSQLConnection.Create(nil);
-  FSQLConn.DriverName := 'MSSQL';
-  FSQLConn.LibraryName := 'dbxmss.dll';
-  FSQLConn.VendorLib := 'sqlncli11.dll';
+  FADOConn := TADOConnection.Create(nil);
+  FADOConn.LoginPrompt := False;
+  FADOConn.ConnectionTimeout := 10;
   FConnected := False;
   FConfigFile := ExtractFilePath(ParamStr(0)) + 'server.ini';
 end;
@@ -52,35 +60,37 @@ destructor TServerInit.Destroy;
 begin
   if FConnected then
     Disconnect;
-  FSQLConn.Free;
+  FADOConn.Free;
   inherited;
 end;
 
+function TServerInit.BuildConnStr(const AServer, ADatabase, AUser,
+  APassword: string; APort: Integer): string;
+begin
+  Result := Format(
+    'Provider=SQLOLEDB.1;Password=%s;Persist Security Info=True;' +
+    'User ID=%s;Initial Catalog=%s;Data Source=%s',
+    [APassword, AUser, ADatabase, AServer]);
+  if APort > 0 then
+    Result := Result + ',' + IntToStr(APort);
+end;
+
 function TServerInit.Connect(const AServer, ADatabase, AUser,
-  APassword: string): Boolean;
+  APassword: string; APort: Integer = 0): Boolean;
 begin
   Result := False;
+  FLastError := '';
   try
-    FSQLConn.Params.Clear;
-    FSQLConn.Params.Add('DriverName=MSSQL');
-    FSQLConn.Params.Add('HostName=' + AServer);
-    FSQLConn.Params.Add('Database=' + ADatabase);
-    FSQLConn.Params.Add('User_Name=' + AUser);
-    FSQLConn.Params.Add('Password=' + APassword);
-    FSQLConn.Params.Add('BlobSize=-1');
-    FSQLConn.Params.Add('ErrorResourceFile=');
-    FSQLConn.Params.Add('LocaleCode=2052');
-    FSQLConn.Params.Add('IsolationLevel=ReadCommitted');
-    FSQLConn.Params.Add('OS Authentication=False');
-    FSQLConn.Params.Add('Multiple Transactions=False');
-    FSQLConn.Params.Add('Trim Char=False');
-
-    FSQLConn.Open;
+    FADOConn.Close;
+    FADOConn.ConnectionString := BuildConnStr(AServer, ADatabase, AUser,
+      APassword, APort);
+    FADOConn.Open;
     FConnected := True;
     Result := True;
   except
     on E: Exception do
     begin
+      FLastError := E.Message;
       FConnected := False;
     end;
   end;
@@ -89,15 +99,17 @@ end;
 function TServerInit.Connect: Boolean;
 var
   Server, DB, User, Pwd: string;
+  Port: Integer;
 begin
   Result := FConnected;
   if Result then Exit;
 
-  LoadConfig(Server, DB, User, Pwd);
-  Result := Connect(Server, DB, User, Pwd);
+  LoadConfig(Server, DB, User, Pwd, Port);
+  Result := Connect(Server, DB, User, Pwd, Port);
 end;
 
-procedure TServerInit.LoadConfig(var AServer, ADatabase, AUser, APassword: string);
+procedure TServerInit.LoadConfig(var AServer, ADatabase, AUser, APassword: string;
+  var APort: Integer);
 var
   Ini: TMemIniFile;
 begin
@@ -105,6 +117,7 @@ begin
   ADatabase := 'FrameworkDB';
   AUser := 'sa';
   APassword := '';
+  APort := 0;
 
   if FileExists(FConfigFile) then
   begin
@@ -114,13 +127,15 @@ begin
       ADatabase := Ini.ReadString('Database', 'Database', 'FrameworkDB');
       AUser := Ini.ReadString('Database', 'User_Name', 'sa');
       APassword := Ini.ReadString('Database', 'Password', '');
+      APort := Ini.ReadInteger('Database', 'Port', 0);
     finally
       Ini.Free;
     end;
   end;
 end;
 
-procedure TServerInit.SaveConfig(const AServer, ADatabase, AUser, APassword: string);
+procedure TServerInit.SaveConfig(const AServer, ADatabase, AUser, APassword: string;
+  APort: Integer);
 var
   Ini: TMemIniFile;
 begin
@@ -130,18 +145,23 @@ begin
     Ini.WriteString('Database', 'Database', ADatabase);
     Ini.WriteString('Database', 'User_Name', AUser);
     Ini.WriteString('Database', 'Password', APassword);
+    if APort > 0 then
+      Ini.WriteInteger('Database', 'Port', APort)
+    else
+      Ini.DeleteKey('Database', 'Port');
     Ini.UpdateFile;
   finally
     Ini.Free;
   end;
 end;
 
-procedure TServerInit.Reconnect(const AServer, ADatabase, AUser, APassword: string);
+procedure TServerInit.Reconnect(const AServer, ADatabase, AUser, APassword: string;
+  APort: Integer = 0);
 begin
   if FConnected then
     Disconnect;
-  SaveConfig(AServer, ADatabase, AUser, APassword);
-  Connect(AServer, ADatabase, AUser, APassword);
+  SaveConfig(AServer, ADatabase, AUser, APassword, APort);
+  Connect(AServer, ADatabase, AUser, APassword, APort);
 end;
 
 procedure TServerInit.Disconnect;
@@ -149,7 +169,7 @@ begin
   try
     if FConnected then
     begin
-      FSQLConn.Close;
+      FADOConn.Close;
       FConnected := False;
     end;
   except
@@ -162,15 +182,15 @@ begin
   Result := FConnected;
 end;
 
-function TServerInit.CreateQuery: TSQLQuery;
+function TServerInit.CreateQuery: TADOQuery;
 begin
-  Result := TSQLQuery.Create(nil);
-  Result.SQLConnection := FSQLConn;
+  Result := TADOQuery.Create(nil);
+  Result.Connection := FADOConn;
 end;
 
 function TServerInit.ExecSQL(const ASQL: string): Integer;
 var
-  Q: TSQLQuery;
+  Q: TADOQuery;
 begin
   Result := -1;
   if not FConnected then Exit;
@@ -178,15 +198,15 @@ begin
   Q := CreateQuery;
   try
     Q.SQL.Text := ASQL;
-    Result := Q.ExecSQL(False);
+    Result := Q.ExecSQL;
   finally
     Q.Free;
   end;
 end;
 
-function TServerInit.OpenSQL(const ASQL: string): TSQLQuery;
+function TServerInit.OpenSQL(const ASQL: string): TADOQuery;
 var
-  Q: TSQLQuery;
+  Q: TADOQuery;
 begin
   if not FConnected then
   begin
@@ -206,25 +226,24 @@ begin
 end;
 
 function TServerInit.TestConnection(const AServer, ADatabase, AUser,
-  APassword: string): Boolean;
+  APassword: string; APort: Integer = 0): Boolean;
 var
-  TempConn: TSQLConnection;
+  TempConn: TADOConnection;
 begin
   Result := False;
-  TempConn := TSQLConnection.Create(nil);
+  FLastError := '';
+  TempConn := TADOConnection.Create(nil);
   try
-    TempConn.DriverName := 'MSSQL';
-    TempConn.LibraryName := 'dbxmss.dll';
-    TempConn.VendorLib := 'sqlncli11.dll';
-    TempConn.Params.Add('DriverName=MSSQL');
-    TempConn.Params.Add('HostName=' + AServer);
-    TempConn.Params.Add('Database=' + ADatabase);
-    TempConn.Params.Add('User_Name=' + AUser);
-    TempConn.Params.Add('Password=' + APassword);
+    TempConn.LoginPrompt := False;
+    TempConn.ConnectionTimeout := 5;
+    TempConn.ConnectionString := BuildConnStr(AServer, ADatabase, AUser,
+      APassword, APort);
     TempConn.Open;
     Result := True;
     TempConn.Close;
   except
+    on E: Exception do
+      FLastError := E.Message;
   end;
   TempConn.Free;
 end;
