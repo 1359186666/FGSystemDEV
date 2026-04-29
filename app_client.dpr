@@ -62,6 +62,7 @@ begin
         TConfigManager.Create(LoginFrm.TCPClient),
         LoginFrm.LanguageManager
       );
+      Application.MainForm := MainFrm;
       MainFrm.Show;
 
       Application.Run;

@@ -102,10 +102,9 @@ uses
 
 procedure TMainFrm.FormCreate(Sender: TObject);
 begin
-  FormStyle := fsMDIForm;
-  WindowState := wsMaximized;
   Caption := SAppTitle + ' v' + SAppVersion;
-  sbMain.Panels[0].Text := SMainStatusOffline;
+  if Assigned(sbMain) and (sbMain.Panels.Count > 0) then
+    sbMain.Panels[0].Text := SMainStatusOffline;
 end;
 
 procedure TMainFrm.Initialize(ATCPClient: TTCPClient; AUser: TUser;
