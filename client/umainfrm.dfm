@@ -26,7 +26,6 @@ object MainFrm: TMainFrm
     Width = 1024
     Height = 29
     Caption = 'tbMain'
-    Images = ilMain
     TabOrder = 0
     object btnLogout: TToolButton
       Left = 0
@@ -115,10 +114,6 @@ object MainFrm: TMainFrm
         Action = actAbout
       end
     end
-  end
-  object ilMain: TImageList
-    Left = 200
-    Top = 88
   end
   object alMain: TActionList
     Left = 280
