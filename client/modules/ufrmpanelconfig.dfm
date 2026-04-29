@@ -1,15 +1,6 @@
-inherited PanelConfigFrm: TFrmMultiTable
-  Caption = 'Panel Control Configuration'
-  object actSave: TAction
-    Caption = 'Save'
-    OnExecute = actSaveExecute
-  end
-  object actAddCtrl: TAction
-    Caption = 'Add Control'
-    OnExecute = actAddCtrlExecute
-  end
-  object actDeleteCtrl: TAction
-    Caption = 'Delete Control'
-    OnExecute = actDeleteCtrlExecute
-  end
+object PanelConfigFrm: TPanelConfigFrm
+  Left = 0 Top = 0 Caption = 'Panel Config' ClientHeight = 600 ClientWidth = 900
+  Color = clBtnFace Font.Charset = DEFAULT_CHARSET Font.Color = clWindowText Font.Height = -11 Font.Name = 'Tahoma' Font.Style = []
+  FormStyle = fsMDIChild OldCreateOrder = False
+  OnClose = FormClose OnCreate = FormCreate PixelsPerInch = 96 TextHeight = 13
 end

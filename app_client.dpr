@@ -25,6 +25,7 @@ uses
   umainfrm in 'client\umainfrm.pas' {TMainFrm},
   ufrmsingletable in 'client\template\ufrmsingletable.pas' {TFrmSingleTable},
   ufrmsingletablehelper in 'client\template\ufrmsingletablehelper.pas',
+  ufrmmultitablehelper in 'client\template\ufrmmultitablehelper.pas',
   ufrmmultitable in 'client\template\ufrmmultitable.pas' {TFrmMultiTable},
   ufrmreport in 'client\template\ufrmreport.pas' {TFrmReport},
   ufrmusermgr in 'client\modules\ufrmusermgr.pas' {TUserMgrFrm},

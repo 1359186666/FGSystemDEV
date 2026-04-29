@@ -1,23 +1,8 @@
-inherited GridConfigFrm: TFrmMultiTable
-  Caption = 'Grid Column Configuration'
-  object actSave: TAction
-    Caption = 'Save'
-    OnExecute = actSaveExecute
-  end
-  object actAddCol: TAction
-    Caption = 'Add Column'
-    OnExecute = actAddColExecute
-  end
-  object actDeleteCol: TAction
-    Caption = 'Delete Column'
-    OnExecute = actDeleteColExecute
-  end
-  object actMoveUp: TAction
-    Caption = 'Move Up'
-    OnExecute = actMoveUpExecute
-  end
-  object actMoveDown: TAction
-    Caption = 'Move Down'
-    OnExecute = actMoveDownExecute
-  end
+object GridConfigFrm: TGridConfigFrm
+  Left = 0 Top = 0
+  Caption = 'Grid Config' ClientHeight = 600 ClientWidth = 900
+  Color = clBtnFace Font.Charset = DEFAULT_CHARSET Font.Color = clWindowText Font.Height = -11 Font.Name = 'Tahoma' Font.Style = []
+  FormStyle = fsMDIChild OldCreateOrder = False
+  OnClose = FormClose OnCreate = FormCreate
+  PixelsPerInch = 96 TextHeight = 13
 end
