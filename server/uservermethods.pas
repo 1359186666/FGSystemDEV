@@ -165,7 +165,7 @@ end;
 
 function TServerMethods.HandleOpenData(const AParams: TJSONObject): string;
 var
-  SQL: string;
+  SQL, CleanSQL: string;
   PageIndex, PageSize: Integer;
   Q: TADOQuery;
   JArr, JArrRows: TJSONArray;
@@ -185,23 +185,27 @@ begin
     Exit;
   end;
 
+  CleanSQL := Trim(SQL);
+  if Pos(' ORDER BY ', UpperCase(CleanSQL)) > 0 then
+    CleanSQL := Trim(Copy(CleanSQL, 1, Pos(' ORDER BY ', UpperCase(CleanSQL)) - 1));
+
   JResp := TJSONObject.Create;
   try
     try
-      // get total count
       CountQ := FServerInit.CreateQuery;
       try
-        CountQ.SQL.Text := 'SELECT COUNT(*) AS CNT FROM (' + SQL + ') AS T';
+        CountQ.SQL.Text := 'SELECT COUNT(*) AS CNT FROM (' + CleanSQL + ') AS T';
         CountQ.Open;
         JResp.AddPair('TotalCount', TJSONNumber.Create(CountQ.FieldByName('CNT').AsInteger));
       finally
         CountQ.Free;
       end;
 
-      // apply paging
       if PageSize > 0 then
         SQL := Format('SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT 0)) AS __rn FROM (%s) AS __t) AS __p WHERE __rn BETWEEN %d AND %d',
-          [SQL, PageIndex * PageSize + 1, (PageIndex + 1) * PageSize]);
+          [CleanSQL, PageIndex * PageSize + 1, (PageIndex + 1) * PageSize])
+      else
+        SQL := CleanSQL;
 
       Q := FServerInit.CreateQuery;
       try
