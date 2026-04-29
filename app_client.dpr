@@ -1,7 +1,7 @@
 program app_client;
 
 uses
-  Vcl.Forms, Vcl.Controls,
+  Vcl.Forms, Vcl.Controls, Vcl.Dialogs,
   System.SysUtils,
   Winapi.Windows,
   uappdefines in 'common\uappdefines.pas',
