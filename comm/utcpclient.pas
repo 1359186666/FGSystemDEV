@@ -82,8 +82,8 @@ end;
 
 function TTCPClient.Connect: Boolean;
 begin
-  Result := False;
-  if FConnected then Exit;
+  Result := FConnected;
+  if Result then Exit;
 
   try
     FTCPClient.Host := FHost;

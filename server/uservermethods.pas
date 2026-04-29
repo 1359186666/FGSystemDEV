@@ -125,12 +125,12 @@ begin
       if Q.IsEmpty then
       begin
         JResp.AddPair('Success', TJSONBool.Create(False));
-        JResp.AddPair('Message', 'Invalid username or password');
+        JResp.AddPair('Message', 'User not found: ' + UserName);
       end
       else if not VerifyPassword(Password, Q.FieldByName('PasswordHash').AsString) then
       begin
         JResp.AddPair('Success', TJSONBool.Create(False));
-        JResp.AddPair('Message', 'Invalid username or password');
+        JResp.AddPair('Message', 'Password mismatch for user: ' + UserName);
       end
       else
       begin
