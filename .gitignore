@@ -1,39 +1,10 @@
-# Delphi / RAD Studio
+*.ini
+!lang/*.ini
+*.exe
+*.dll
+*.bpl
 *.dcu
 *.dsk
 *.local
 *.identcache
-*.stat
-*.tvsconfig
-*.drc
-*.rsm
-*.exe
-*.dll
-*.bpl
-*.dcp
-*.map
-*.tds
 __history/
-__recovery/
-*.~*
-*.ddp
-*.otares
-
-# Model files (ide-generated backups)
-*.mps
-*.mpt
-
-# Delphi compiled resources
-*.dcres
-
-# IDE generated
-*.dproj.local
-*.groupproj.local
-
-# Windows
-Thumbs.db
-Desktop.ini
-
-# General
-*.bak
-*.tmp

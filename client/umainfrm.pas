@@ -122,13 +122,20 @@ end;
 
 procedure TMainFrm.FormShow(Sender: TObject);
 begin
-  UpdateStatusBar;
-  UpdateMenuPermissions;
+  try
+    UpdateStatusBar;
+    UpdateMenuPermissions;
 
-  miAdmin.Visible := FUser.CurrentUser.IsSuperAdmin;
-  btnAdmin.Visible := FUser.CurrentUser.IsSuperAdmin;
+    if Assigned(FUser) then
+    begin
+      miAdmin.Visible := FUser.CurrentUser.IsSuperAdmin;
+      btnAdmin.Visible := FUser.CurrentUser.IsSuperAdmin;
+    end;
 
-  FLanguageManager.TranslateForm(Self, 'MainForm');
+    if Assigned(FLanguageManager) then
+      FLanguageManager.TranslateForm(Self, 'MainForm');
+  except
+  end;
 end;
 
 procedure TMainFrm.FormClose(Sender: TObject; var Action: TCloseAction);

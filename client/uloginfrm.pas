@@ -5,10 +5,17 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons, System.IOUtils,
   IdTCPClient,
   uappdefines, uapptypes, uapputils, uappres,
   utcpclient, uuser, urole, upermissionmgr, ulanguagemgr;
+
+function GetConfigPath: string;
+begin
+  Result := TPath.Combine(TPath.GetHomePath, 'FrameworkConfig');
+  ForceDirectories(Result);
+  Result := TPath.Combine(Result, 'config.ini');
+end;
 
 type
   TLoginFrm = class(TForm)
@@ -67,7 +74,7 @@ begin
   FUser := TUser.Create(FTCPClient);
   FRole := TRole.Create(FTCPClient);
   FPermissionMgr := TPermissionManager.Create(FTCPClient, FUser, FRole);
-  FLanguageManager := TLanguageManager.Create('lang\');
+  FLanguageManager := TLanguageManager.Create(ExtractFilePath(Application.ExeName) + 'lang\');
 
   Caption := SLoginCaption;
 
@@ -124,7 +131,7 @@ var
   Ini: TMemIniFile;
   IniPath: string;
 begin
-  IniPath := ExtractFilePath(Application.ExeName) + 'config.ini';
+  IniPath := GetConfigPath;
   if FileExists(IniPath) then
   begin
     Ini := TMemIniFile.Create(IniPath, TEncoding.UTF8);
@@ -148,7 +155,7 @@ var
   Ini: TMemIniFile;
   IniPath: string;
 begin
-  IniPath := ExtractFilePath(Application.ExeName) + 'config.ini';
+  IniPath := GetConfigPath;
   Ini := TMemIniFile.Create(IniPath, TEncoding.UTF8);
   try
     Ini.WriteString('Login', 'Server', edtServer.Text);
