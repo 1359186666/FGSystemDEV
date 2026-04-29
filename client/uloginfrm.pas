@@ -10,13 +10,6 @@ uses
   uappdefines, uapptypes, uapputils, uappres,
   utcpclient, uuser, urole, upermissionmgr, ulanguagemgr;
 
-function GetConfigPath: string;
-begin
-  Result := TPath.Combine(TPath.GetHomePath, 'FrameworkConfig');
-  ForceDirectories(Result);
-  Result := TPath.Combine(Result, 'config.ini');
-end;
-
 type
   TLoginFrm = class(TForm)
     pnlMain: TPanel;
@@ -67,6 +60,13 @@ implementation
 
 uses
   System.IniFiles;
+
+function GetConfigPath: string;
+begin
+  Result := TPath.Combine(TPath.GetHomePath, 'FrameworkConfig');
+  ForceDirectories(Result);
+  Result := TPath.Combine(Result, 'config.ini');
+end;
 
 procedure TLoginFrm.FormCreate(Sender: TObject);
 begin
