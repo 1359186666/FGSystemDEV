@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.Generics.Collections, System.IniFiles,
   Data.DB, Data.Win.ADODB,
-  uappdefines, uapptypes;
+  uappdefines, uapptypes, uapputils;
 
 type
   TServerInit = class
@@ -31,6 +31,7 @@ type
     function IsConnected: Boolean;
     function TestConnection(const AServer, ADatabase, AUser, APassword: string;
       APort: Integer = 0): Boolean;
+    function InitDatabase: Boolean;
 
     function CreateQuery: TADOQuery;
     function ExecSQL(const ASQL: string): Integer;
@@ -246,6 +247,52 @@ begin
       FLastError := E.Message;
   end;
   TempConn.Free;
+end;
+
+function TServerInit.InitDatabase: Boolean;
+var
+  Q: TADOQuery;
+  PwdHash: string;
+begin
+  Result := False;
+  if not FConnected then Exit;
+
+  Q := CreateQuery;
+  try
+    PwdHash := HashPassword('admin123');
+
+    Q.SQL.Text := 'SELECT COUNT(*) AS CNT FROM sys_Users WHERE UserName = ''admin''';
+    Q.Open;
+    if Q.FieldByName('CNT').AsInteger = 0 then
+    begin
+      Q.Close;
+      Q.SQL.Text := 'INSERT INTO sys_Roles (RoleName, Remark) VALUES (''SuperAdmin'', ''System super admin'')';
+      Q.ExecSQL;
+
+      Q.SQL.Text := Format(
+        'INSERT INTO sys_Users (UserName, RealName, PasswordHash, Status, IsSuperAdmin) ' +
+        'VALUES (''admin'', ''Administrator'', ''%s'', 1, 1)',
+        [PwdHash]);
+      Q.ExecSQL;
+
+      Q.SQL.Text := 'INSERT INTO sys_UserRole (UserID, RoleID) VALUES (' +
+        '(SELECT UserID FROM sys_Users WHERE UserName=''admin''), ' +
+        '(SELECT RoleID FROM sys_Roles WHERE RoleName=''SuperAdmin''))';
+      Q.ExecSQL;
+    end
+    else
+    begin
+      Q.Close;
+      Q.SQL.Text := Format(
+        'UPDATE sys_Users SET PasswordHash = ''%s'' WHERE UserName = ''admin''',
+        [PwdHash]);
+      Q.ExecSQL;
+    end;
+
+    Result := True;
+  finally
+    Q.Free;
+  end;
 end;
 
 end.

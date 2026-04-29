@@ -51,6 +51,9 @@ begin
   if not FServerInit.IsConnected then
     FServerInit.Connect;
 
+  if FServerInit.IsConnected then
+    FServerInit.InitDatabase;
+
   FServerMethods := TServerMethods.Create(FServerInit);
 
   FTCPServer.OnRequestReceived := OnRequestReceived;

@@ -40,6 +40,7 @@ type
     FPermissionMgr: TPermissionManager;
     FLanguageManager: TLanguageManager;
     FLoginSuccess: Boolean;
+    FObjectsTransferred: Boolean;
     procedure LoadSettings;
     procedure SaveSettings;
     procedure InitLanguage;
@@ -79,11 +80,16 @@ end;
 
 procedure TLoginFrm.FormDestroy(Sender: TObject);
 begin
-  FPermissionMgr.Free;
-  FRole.Free;
-  FUser.Free;
-  FTCPClient.Free;
-  FLanguageManager.Free;
+  if not FObjectsTransferred then
+  begin
+    if FTCPClient.IsConnected then
+      FTCPClient.Disconnect;
+    FPermissionMgr.Free;
+    FRole.Free;
+    FUser.Free;
+    FTCPClient.Free;
+    FLanguageManager.Free;
+  end;
 end;
 
 procedure TLoginFrm.InitLanguage;
@@ -231,6 +237,7 @@ begin
     FLoginSuccess := FUser.Login(edtUser.Text, edtPwd.Text);
     if FLoginSuccess then
     begin
+      FObjectsTransferred := True;
       SaveSettings;
       FPermissionMgr.LoadUserPermissions;
       ModalResult := mrOk;
