@@ -4,7 +4,7 @@ object LoginFrm: TLoginFrm
   BorderStyle = bsDialog
   Caption = 'User Login'
   ClientHeight = 280
-  ClientWidth = 420
+  ClientWidth = 460
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object LoginFrm: TLoginFrm
   object pnlMain: TPanel
     Left = 0
     Top = 0
-    Width = 420
+    Width = 460
     Height = 280
     Align = alClient
     BevelOuter = bvNone
@@ -27,7 +27,7 @@ object LoginFrm: TLoginFrm
     object lblTitle: TLabel
       Left = 0
       Top = 20
-      Width = 420
+      Width = 460
       Height = 24
       Alignment = taCenter
       AutoSize = False
@@ -139,6 +139,15 @@ object LoginFrm: TLoginFrm
       Caption = 'Cancel'
       TabOrder = 7
       OnClick = btnCancelClick
+    end
+    object btnTestConn: TButton
+      Left = 320
+      Top = 225
+      Width = 80
+      Height = 25
+      Caption = 'Test Conn'
+      TabOrder = 8
+      OnClick = btnTestConnClick
     end
   end
 end

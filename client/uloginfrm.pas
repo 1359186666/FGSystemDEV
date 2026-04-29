@@ -6,6 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
+  IdTCPClient,
   uappdefines, uapptypes, uapputils, uappres,
   utcpclient, uuser, urole, upermissionmgr, ulanguagemgr;
 
@@ -26,10 +27,12 @@ type
     cbLanguage: TComboBox;
     lblLanguage: TLabel;
     chkRemember: TCheckBox;
+    btnTestConn: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
+    procedure btnTestConnClick(Sender: TObject);
   private
     FTCPClient: TTCPClient;
     FUser: TUser;
@@ -167,6 +170,38 @@ procedure TLoginFrm.btnCancelClick(Sender: TObject);
 begin
   FLoginSuccess := False;
   Close;
+end;
+
+procedure TLoginFrm.btnTestConnClick(Sender: TObject);
+var
+  TestClient: TIdTCPClient;
+begin
+  btnTestConn.Enabled := False;
+  Cursor := crHourGlass;
+  try
+    TestClient := TIdTCPClient.Create(nil);
+    try
+      TestClient.Host := edtServer.Text;
+      TestClient.Port := StrToIntDef(edtPort.Text, DEFAULT_SERVER_PORT);
+      TestClient.ConnectTimeout := 3000;
+      TestClient.ReadTimeout := 3000;
+      TestClient.Connect;
+      TestClient.Disconnect;
+      Application.MessageBox(
+        PChar(Format('Connection to %s:%s succeeded!', [edtServer.Text, edtPort.Text])),
+        PChar(SLoginCaption), MB_OK or MB_ICONINFORMATION);
+    finally
+      TestClient.Free;
+    end;
+  except
+    on E: Exception do
+      Application.MessageBox(
+        PChar(Format('Cannot connect to %s:%s'#13#10'%s',
+          [edtServer.Text, edtPort.Text, E.Message])),
+        PChar(SLoginCaption), MB_OK or MB_ICONERROR);
+  end;
+  Cursor := crDefault;
+  btnTestConn.Enabled := True;
 end;
 
 procedure TLoginFrm.DoLogin;
