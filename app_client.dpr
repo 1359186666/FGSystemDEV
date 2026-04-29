@@ -63,8 +63,6 @@ begin
         LoginFrm.LanguageManager
       );
       Application.MainForm := MainFrm;
-      MainFrm.Show;
-
       Application.Run;
     finally
       MainFrm.Free;
