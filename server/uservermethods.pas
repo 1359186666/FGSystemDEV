@@ -132,34 +132,34 @@ begin
         JResp.AddPair('Success', TJSONBool.Create(False));
         JResp.AddPair('Message', 'Invalid username or password');
       end
-        else
-        begin
-          Token := GenerateGUID;
+      else
+      begin
+        Token := GenerateGUID;
 
-          FillChar(UserInfo, SizeOf(UserInfo), 0);
-          UserInfo.UserID := Q.FieldByName('UserID').AsInteger;
-          UserInfo.UserName := Q.FieldByName('UserName').AsString;
-          UserInfo.RealName := Q.FieldByName('RealName').AsString;
-          UserInfo.Status := Q.FieldByName('Status').AsInteger;
-          UserInfo.IsSuperAdmin := Q.FieldByName('IsSuperAdmin').AsInteger = 1;
+        FillChar(UserInfo, SizeOf(UserInfo), 0);
+        UserInfo.UserID := Q.FieldByName('UserID').AsInteger;
+        UserInfo.UserName := Q.FieldByName('UserName').AsString;
+        UserInfo.RealName := Q.FieldByName('RealName').AsString;
+        UserInfo.Status := Q.FieldByName('Status').AsInteger;
+        UserInfo.IsSuperAdmin := Q.FieldByName('IsSuperAdmin').AsInteger = 1;
 
-          TMonitor.Enter(FSessions);
-          try
-            FSessions.AddOrSetValue(Token, UserInfo);
-          finally
-            TMonitor.Exit(FSessions);
-          end;
-
-          JResp.AddPair('Success', TJSONBool.Create(True));
-          JResp.AddPair('Message', Token);
+        TMonitor.Enter(FSessions);
+        try
+          FSessions.AddOrSetValue(Token, UserInfo);
+        finally
+          TMonitor.Exit(FSessions);
         end;
+
+        JResp.AddPair('Success', TJSONBool.Create(True));
+        JResp.AddPair('Message', Token);
       end;
+
       Result := JResp.ToJSON;
     finally
-      JResp.Free;
+      Q.Free;
     end;
   finally
-    Q.Free;
+    JResp.Free;
   end;
 end;
 
